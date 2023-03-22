@@ -14,7 +14,7 @@ class Tag(models.Model):
     name = models.CharField(null=False, blank=False,
                             max_length=250, verbose_name='Название')
     color = models.CharField(null=False, blank=False,
-                             verbose_name='Цвет в HEX')
+                             max_length=7, verbose_name='Цвет в HEX')
     slug = models.SlugField(null=False, blank=False,
                             unique=True)
 
@@ -32,14 +32,16 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(Ingredient,
                                          verbose_name='Ингредиенты')
     tags = models.ManyToManyField(Tag, verbose_name='Теги')
-    cooking_time = models.IntegerField(null=False, blank=False,
-                                       verbose_name='Время приготовления')
+    cooking_time = models.IntegerField(
+        null=False, blank=False, verbose_name='Время приготовления в минутах')
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='Дата публикации')
 
 
 class Subscription(models.Model):
     subscriber = models.ForeignKey(User, related_name='subsribers',
+                                   on_delete=models.CASCADE,
                                    verbose_name='Подписчик')
     author = models.ForeignKey(User, related_name='favorite_authors',
+                               on_delete=models.CASCADE,
                                verbose_name='Автор')

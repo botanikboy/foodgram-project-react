@@ -1,4 +1,4 @@
 from django.contrib import admin
-from models import Ingredient, Recipe, Tag, User
+from recipes.models import Ingredient, Recipe, Tag, Subscription
 
-admin.site.register([User, Recipe, Ingredient, Tag])
+admin.site.register([Recipe, Ingredient, Tag, Subscription])
