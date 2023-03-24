@@ -9,6 +9,11 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(max_length=10,
                                         verbose_name='Единицы измерения')
 
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+        ordering = ('name',)
+
 
 class Tag(models.Model):
     name = models.CharField(null=False, blank=False,
@@ -17,6 +22,14 @@ class Tag(models.Model):
                              max_length=7, verbose_name='Цвет в HEX')
     slug = models.SlugField(null=False, blank=False,
                             unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+    class Meta:
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
 
 
 class Recipe(models.Model):
@@ -37,6 +50,14 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='Дата публикации')
 
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('pub_date',)
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
 
 class Subscription(models.Model):
     subscriber = models.ForeignKey(User, related_name='subsribers',
@@ -45,3 +66,7 @@ class Subscription(models.Model):
     author = models.ForeignKey(User, related_name='favorite_authors',
                                on_delete=models.CASCADE,
                                verbose_name='Автор')
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
