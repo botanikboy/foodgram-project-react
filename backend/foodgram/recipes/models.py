@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.html import format_html
+from django.utils.text import slugify
+from recipes.utils import transliterate
 
 User = get_user_model()
 
@@ -25,10 +27,9 @@ class Tag(models.Model):
     color = models.CharField(null=False, blank=False,
                              default='#ffffff',
                              max_length=7, verbose_name='Цвет в HEX')
-    slug = models.SlugField(null=False, blank=False,
-                            unique=True)
+    slug = models.SlugField(unique=True, editable=False)
 
-    def colored(self):
+    def colored_name(self):
         return format_html(
             '<span style="color: {};">{}</span>',
             self.color,
@@ -37,6 +38,10 @@ class Tag(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+    def save(self, *args, **kwards):
+        self.slug = slugify(transliterate(self.name))
+        super(Tag, self).save(*args, **kwards)
 
     class Meta:
         verbose_name = 'Тэг'

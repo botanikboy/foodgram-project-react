@@ -24,7 +24,8 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('colored', 'slug')
+    list_display = ('colored_name', 'slug')
+    fileds = ('name', 'color')
 
 
 admin.site.register(Subscription)
