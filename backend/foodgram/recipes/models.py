@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.html import format_html
 from django.utils.text import slugify
+
 from recipes.utils import transliterate
 
 User = get_user_model()
@@ -23,10 +24,12 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(null=False, blank=False,
-                            max_length=250, verbose_name='Название')
+                            max_length=250, verbose_name='Название',
+                            unique=True)
     color = models.CharField(null=False, blank=False,
                              default='#ffffff',
-                             max_length=7, verbose_name='Цвет в HEX')
+                             max_length=7, verbose_name='Цвет в HEX',
+                             )
     slug = models.SlugField(unique=True, editable=False)
 
     def colored_name(self):
@@ -41,6 +44,7 @@ class Tag(models.Model):
 
     def save(self, *args, **kwards):
         self.slug = slugify(transliterate(self.name))
+        self.color = self.color.upper()
         super(Tag, self).save(*args, **kwards)
 
     class Meta:
@@ -97,6 +101,10 @@ class Subscription(models.Model):
     author = models.ForeignKey(User, related_name='favorite_authors',
                                on_delete=models.CASCADE,
                                verbose_name='Автор')
+
+    def __str__(self):
+        return (f'Подписчик: {self.subscriber.username}, '
+                f'Автор: {self.author.username}')
 
     class Meta:
         verbose_name = 'Подписка'

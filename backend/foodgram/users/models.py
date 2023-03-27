@@ -8,8 +8,12 @@ class User(AbstractUser):
         related_name='favorited', blank=True)
     shoping_cart = models.ManyToManyField(
         'recipes.Ingredient', verbose_name='Список покупок', blank=True)
+    email = models.EmailField(unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = [
+        'first_name', 'last_name', 'username']
 
 
-Group.objects.get_or_create(name='Users')
 admins, created = Group.objects.get_or_create(name='Administrators')
 # admins.permissions.set([Permission.objects.get(name='')])
