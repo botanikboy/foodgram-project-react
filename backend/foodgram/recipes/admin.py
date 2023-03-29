@@ -1,11 +1,11 @@
 from django.contrib import admin
-from recipes.models import (Ingredient, InrgedientQuantity, Recipe,
+from recipes.models import (Ingredient, InrgedientAmount, Recipe,
                             Subscription, Tag)
 
 
 class InrgedientQuantityInline(admin.TabularInline):
-    model = InrgedientQuantity
-    fields = ('ingredient', 'quantity')
+    model = InrgedientAmount
+    fields = ('ingredient', 'amount')
     extra = 1
     verbose_name = 'Ингредиент'
 
@@ -14,6 +14,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
     search_fields = ('name',)
     list_filter = ('author', 'tags',)
+    filter_horizontal = ('tags',)
     inlines = (InrgedientQuantityInline,)
 
 
