@@ -130,14 +130,21 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeListSerializer(many=True, read_only=True,
-                                   source='author.recipes')
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.ReadOnlyField(source='author.recipes.count')
+
+    def get_recipes(self, obj):
+        recipes = obj.author.recipes.all()
+        recipes_limit = int(self.context['request'].query_params.get('recipes_limit', None))
+        if recipes_limit and len(recipes) > recipes_limit:
+            recipes = recipes[:recipes_limit]
+        serializer = RecipeListSerializer(instance=recipes, many=True)
+        return serializer.data
 
     def get_is_subscribed(self, obj):
         current_user = self.context['request'].user
         return Subscription.objects.filter(
-                subscriber=current_user, author=obj.author).exists()
+            subscriber=current_user, author=obj.author).exists()
 
     def validate(self, data):
         user = self.context['request'].user

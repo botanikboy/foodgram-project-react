@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.html import format_html
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 
 from recipes.utils import transliterate
 
@@ -108,10 +109,14 @@ class Subscription(models.Model):
         return (f'Подписчик: {self.subscriber.username}, '
                 f'Автор: {self.author.username}')
 
+    def clean(self):
+        if self.subscriber == self.author:
+            raise ValidationError('Автор и подписчик не могут совпадать')
+
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(fields=['subscriber', 'author'],
-                                    name='unique_subscription')
+                                    name='unique_subscription'),
         ]
