@@ -59,6 +59,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=250, null=False, blank=False,
                             verbose_name='Название')
     image = models.ImageField(
+        upload_to='recipes/',
         null=True, blank=True,
         verbose_name='Картинка')
     text = models.TextField(null=False, blank=False,
@@ -110,3 +111,7 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(fields=['subscriber', 'author'],
+                                    name='unique_subscription')
+        ]

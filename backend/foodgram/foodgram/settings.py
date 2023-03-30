@@ -110,6 +110,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     
     'PAGE_SIZE': 10,
+
+    'NON_FIELD_ERRORS_KEY': 'errors',
 }
 
 DJOSER = {
@@ -126,3 +128,7 @@ DJOSER = {
         'user': ['rest_framework.permissions.IsAuthenticated'],
     }
 }
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

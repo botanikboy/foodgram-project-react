@@ -4,7 +4,8 @@ from recipes.models import Ingredient, Recipe
 
 class RecipeFilter(filters.FilterSet):
     tags = filters.CharFilter(field_name='tags__name', lookup_expr='iexact')
-    author = filters.CharFilter(field_name='author__username', lookup_expr='exact')
+    author = filters.CharFilter(field_name='author__username',
+                                lookup_expr='exact')
     # is_favorited = filters.BooleanFilter(field_name='favorited', )
     # is_in_shopping_cart = filters.BooleanFilter(field_name='favorited', )
 
@@ -15,6 +16,7 @@ class RecipeFilter(filters.FilterSet):
 
 class InrgedientFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
+
     class Meta:
         model = Ingredient
         fields = ['name']

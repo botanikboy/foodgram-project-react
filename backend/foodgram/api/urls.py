@@ -1,14 +1,18 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from .views import (IngredientViewSet, RecipeViewSet, SubscriptionViewSet,
-                    TagViewSet)
+from .views import (IngredientViewSet, RecipeViewSet, SubscriptionsListViewSet,
+                    TagViewSet, SubscriprionCreateDestroyViewSet)
 
 router = SimpleRouter()
 router.register('tags', TagViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('ingredients', IngredientViewSet)
-router.register('subscriptions', SubscriptionViewSet, basename='subscriptions')
+router.register('subscriptions', SubscriptionsListViewSet,
+                basename='subscriptions')
+router.register(r'users/(?P<author_id>[\d]+)/subscribe',
+                SubscriprionCreateDestroyViewSet,
+                basename='new_subscription')
 
 
 urlpatterns = [
