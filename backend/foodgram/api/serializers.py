@@ -3,9 +3,10 @@ import base64
 from rest_framework import serializers
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from users.models import User
-from recipes.models import (Ingredient, InrgedientAmount, Recipe,
+from recipes.models import (Ingredient, IngredientAmount, Recipe,
                             Subscription, Tag)
 
 
@@ -32,6 +33,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(
+        max_length=250,
+        validators=[UniqueValidator(
+            queryset=Tag.objects,
+            message='Тэг с таким именем уже существует.'
+        )]
+    )
+
     class Meta:
         model = Tag
         fields = (
@@ -59,11 +68,24 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         source='ingredient.measurement_unit')
 
     class Meta:
-        model = InrgedientAmount
+        model = IngredientAmount
         fields = (
             'id',
             'name',
             'measurement_unit',
+            'amount',
+        )
+
+
+class IngredientAmountCreateSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects,
+                                            source='ingredient')
+    amount = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = IngredientAmount
+        fields = (
+            'id',
             'amount',
         )
 
@@ -78,9 +100,17 @@ class Base64ImageField(serializers.ImageField):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
-    author = UserSerializer(many=False, read_only=True)
-    ingredients = IngredientAmountSerializer(many=True, source='amounts')
+    tags = TagSerializer(many=True, read_only=True)
+    # ВОПРОС ДЛЯ РЕВЬЮ: в ТЗ не указано, что должно происходить при изменении
+    # или добавлении рецепта администратором, должен ли автор рецепта
+    # оставаться неизменным или меняться на Администратора?
+    # Если дать админу возможность указывать автора вручную, то делать
+    # через get_fields и из view передавать дополнительно в context поле
+    # для исключения, если пользователь является админом?
+    author = UserSerializer(many=False, read_only=True,
+                            default=serializers.CurrentUserDefault())
+    ingredients = IngredientAmountSerializer(
+        many=True, source='amounts', read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(required=True, allow_null=True)
@@ -109,7 +139,69 @@ class RecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
-        read_only_fields = ('author', 'id', 'pub_date')
+        read_only_fields = (
+            'author',
+            'id',
+            'pub_date',
+            'is_favorited',
+            'is_in_shopping_cart'
+        )
+
+
+class RecipeCreateSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects)
+    author = serializers.SlugRelatedField(
+        many=False, read_only=True, default=serializers.CurrentUserDefault(),
+        slug_field='email')
+    ingredients = IngredientAmountCreateSerializer(
+        many=True)
+    image = Base64ImageField(required=True, allow_null=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'tags',
+            'author',
+            'ingredients',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )
+        read_only_fields = ('author',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe.objects, fields=['author', 'name'],
+                message='Рецепт с таким названием уже есть у этого автора.'
+            )
+        ]
+
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop('ingredients', None)
+        tags = validated_data.pop('tags', None)
+        instance.tags.set(tags)
+        instance.amounts.all().delete()
+        for ingredient_data in ingredients_data:
+            IngredientAmount.objects.create(
+                recipe=instance,
+                ingredient=ingredient_data['ingredient'],
+                amount=ingredient_data['amount'],
+            )
+        super().update(instance, validated_data)
+        return instance
+
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients', None)
+        tags = validated_data.pop('tags', None)
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        for ingredient_data in ingredients_data:
+            IngredientAmount.objects.create(
+                recipe=recipe,
+                ingredient=ingredient_data['ingredient'],
+                amount=ingredient_data['amount'],
+            )
+        return recipe
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
@@ -135,7 +227,8 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         recipes = obj.author.recipes.all()
-        recipes_limit = int(self.context['request'].query_params.get('recipes_limit', None))
+        recipes_limit = int(
+            self.context['request'].query_params.get('recipes_limit', None))
         if recipes_limit and len(recipes) > recipes_limit:
             recipes = recipes[:recipes_limit]
         serializer = RecipeListSerializer(instance=recipes, many=True)
@@ -158,9 +251,6 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
             raise serializers.ValidationError('Уже подписан')
         return super().validate(data)
 
-    def create(self, validated_data):
-        return Subscription.objects.create(**validated_data)
-
     class Meta:
         model = Subscription
         fields = (
@@ -176,3 +266,6 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
         read_only_fields = (
             'recipes_count',
         )
+
+    def create(self, validated_data):
+        return Subscription.objects.create(**validated_data)

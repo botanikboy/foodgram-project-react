@@ -1,3 +1,4 @@
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.mixins import (DestroyModelMixin, CreateModelMixin,
@@ -8,8 +9,10 @@ from django.shortcuts import get_object_or_404
 from recipes.models import Ingredient, Recipe, Subscription, Tag
 from users.models import User
 from .serializers import (IngredientSerializer, RecipeSerializer,
-                          SubscriptionSerialiser, TagSerializer)
-from .permissions import AdminPermission, SubscriptionPermission
+                          RecipeCreateSerializer, SubscriptionSerialiser,
+                          TagSerializer)
+from .permissions import (AdminPermission, SubscriptionPermission,
+                          IsAuthorOrAdmin)
 from .filters import InrgedientFilter, RecipeFilter
 
 
@@ -22,10 +25,42 @@ class TagViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, AdminPermission)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrAdmin,
+    )
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.action in ['update', 'partial_update', 'create']:
+            return RecipeCreateSerializer
+        return RecipeSerializer
+
+    def perform_create(self, serializer):
+        current_user = self.request.user
+        return serializer.save(author=current_user)
+
+    def perform_update(self, serializer):
+        current_user = self.request.user
+        return serializer.save(author=current_user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_create(serializer)
+        instance_serializer = RecipeSerializer(
+            instance, context={'request': request})
+        return Response(instance_serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data,
+                                         instance=self.get_object(),)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_update(serializer)
+        instance_serializer = RecipeSerializer(
+            instance, context={'request': request})
+        return Response(instance_serializer.data)
 
 
 class IngredientViewSet(ModelViewSet):

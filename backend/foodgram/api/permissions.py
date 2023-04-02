@@ -7,9 +7,27 @@ class AdminPermission(BasePermission):
             return True
         return request.user.groups.filter(name='Administrators').exists()
 
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.groups.filter(name='Administrators').exists()
+
+
 class SubscriptionPermission(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        return obj.subscriber == request.user
+        return (obj.subscriber == request.user)
+
+
+class IsAuthorOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return (obj.author == request.user
+                or
+                request.user.groups.filter(name='Administrators').exists())

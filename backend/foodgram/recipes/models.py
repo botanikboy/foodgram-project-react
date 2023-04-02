@@ -66,7 +66,7 @@ class Recipe(models.Model):
     text = models.TextField(null=False, blank=False,
                             verbose_name='Текстовое описание')
     ingredients = models.ManyToManyField(Ingredient,
-                                         through='InrgedientAmount',
+                                         through='IngredientAmount',
                                          verbose_name='Ингредиенты')
     tags = models.ManyToManyField(Tag, verbose_name='Теги')
     cooking_time = models.IntegerField(
@@ -83,15 +83,13 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
 
-class InrgedientAmount(models.Model):
+class IngredientAmount(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
                                    verbose_name='Ингредиент')
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='amounts',)
-    amount = models.DecimalField(decimal_places=2,
-                                 max_digits=6,
-                                 blank=False, null=False,
-                                 verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(blank=False, null=False,
+                                              verbose_name='Количество')
 
     def __str__(self):
         return str(self.id)
