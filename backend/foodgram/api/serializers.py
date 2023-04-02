@@ -8,6 +8,7 @@ from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 from users.models import User
 from recipes.models import (Ingredient, IngredientAmount, Recipe,
                             Subscription, Tag)
+from .constants import RECIPES_LIMIT
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -228,7 +229,8 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
     def get_recipes(self, obj):
         recipes = obj.author.recipes.all()
         recipes_limit = int(
-            self.context['request'].query_params.get('recipes_limit', None))
+            self.context['request'].query_params.get(
+                'recipes_limit', RECIPES_LIMIT))
         if recipes_limit and len(recipes) > recipes_limit:
             recipes = recipes[:recipes_limit]
         serializer = RecipeListSerializer(instance=recipes, many=True)
