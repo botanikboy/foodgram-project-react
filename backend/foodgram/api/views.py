@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 # from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from djoser.views import UserViewSet as DjoserUserViewSet
+from django.http import FileResponse
 
 from recipes.models import (Ingredient, Recipe, Subscription, Tag,
                             IngredientAmount)
@@ -103,9 +104,17 @@ class RecipeViewSet(ModelViewSet):
             .values('ingredient__name', 'ingredient__measurement_unit')
             .annotate(total_amount=Sum('amount'))
             .order_by('ingredient__name'))
-        response = Response(amounts_in_cart,
-                            content_type='text/plain; charset=UTF-8')
-        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
+        with open('media/shopping_cart.txt', 'w', encoding="utf-8") as f:
+            for ingredient in amounts_in_cart:
+                f.write(
+                    f'{ingredient["ingredient__name"].capitalize()} ('
+                    f'{ingredient["ingredient__measurement_unit"]}) - '
+                    f'{ingredient["total_amount"]}\n'
+                )
+        f = open('media/shopping_cart.txt', 'rb')
+        response = FileResponse(f, content_type='text/plain; charset=UTF-8')
+        response['Content-Disposition'] = (
+            'attachment;filename="shopping_cart.txt"')
         return response
 
     @action(detail=True, methods=['post'],
