@@ -13,14 +13,6 @@ class AdminPermission(BasePermission):
         return request.user.groups.filter(name='Administrators').exists()
 
 
-class SubscriptionPermission(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated
-
-    # def has_object_permission(self, request, view, obj):
-    #     return (obj.subscriber == request.user)
-
-
 class IsAuthorOrAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated

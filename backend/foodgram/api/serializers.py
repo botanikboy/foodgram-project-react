@@ -250,7 +250,8 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
                 'Нельзя подписаться на самого себя')
         if Subscription.objects.filter(subscriber=user,
                                        author=author).exists():
-            raise serializers.ValidationError('Уже подписан')
+            raise serializers.ValidationError(
+                'Уже подписан')
         return super().validate(data)
 
     class Meta:
@@ -268,6 +269,3 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
         read_only_fields = (
             'recipes_count',
         )
-
-    def create(self, validated_data):
-        return Subscription.objects.create(**validated_data)

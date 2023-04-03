@@ -2,26 +2,20 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import (IsAuthenticatedOrReadOnly,
                                         IsAuthenticated)
-# from rest_framework.mixins import (DestroyModelMixin, CreateModelMixin,
-#                                    ListModelMixin)
 from rest_framework import status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-# from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 from djoser.views import UserViewSet as DjoserUserViewSet
 from django.http import FileResponse
 
 from recipes.models import (Ingredient, Recipe, Subscription, Tag,
                             IngredientAmount)
-# from users.models import User
 from .serializers import (IngredientSerializer,
                           RecipeSerializer, RecipeCreateSerializer,
                           RecipeListSerializer, SubscriptionSerialiser,
                           TagSerializer)
-from .permissions import (AdminPermission,
-                          #   SubscriptionPermission,
-                          IsAuthorOrAdmin)
+from .permissions import AdminPermission, IsAuthorOrAdmin
 from .filters import InrgedientFilter, RecipeFilter
 
 
@@ -148,36 +142,6 @@ class IngredientViewSet(ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, AdminPermission)
     filter_backends = [DjangoFilterBackend]
     filterset_class = InrgedientFilter
-
-
-# class SubscriptionsListViewSet(GenericViewSet, ListModelMixin):
-#     serializer_class = SubscriptionSerialiser
-#     permission_classes = (SubscriptionPermission,)
-
-#     def get_queryset(self):
-#         current_user = self.request.user
-#         return Subscription.objects.filter(subscriber=current_user)
-
-
-# class SubscriprionCreateDestroyViewSet(GenericViewSet,
-#                                        CreateModelMixin,
-#                                        DestroyModelMixin):
-#     serializer_class = SubscriptionSerialiser
-#     permission_classes = (SubscriptionPermission,)
-
-#     def get_object(self):
-#         current_user = self.request.user
-#         author = get_object_or_404(User, pk=self.kwargs.get('author_id'))
-#         return get_object_or_404(
-#             Subscription, subscriber=current_user, author=author)
-
-#     def perform_create(self, serializer):
-#         current_user = self.request.user
-#         author = get_object_or_404(User, pk=self.kwargs.get('author_id'))
-#         return serializer.save(subscriber=current_user, author=author)
-
-#     def delete(self, request, *args, **kwargs):
-#         return self.destroy(request, *args, **kwargs)
 
 
 class UserViewSet(DjoserUserViewSet):

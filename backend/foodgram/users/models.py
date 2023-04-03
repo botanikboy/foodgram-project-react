@@ -16,4 +16,3 @@ class User(AbstractUser):
 
 
 admins, created = Group.objects.get_or_create(name='Administrators')
-# admins.permissions.set([Permission.objects.get(name='')])

@@ -6,16 +6,21 @@ from recipes.models import (Ingredient, IngredientAmount, Recipe,
 class InrgedientQuantityInline(admin.TabularInline):
     model = IngredientAmount
     fields = ('ingredient', 'amount')
-    extra = 1
+    extra = 0
     verbose_name = 'Ингредиент'
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author')
+    list_display = ('name', 'author')
     search_fields = ('name',)
     list_filter = ('author', 'tags',)
     filter_horizontal = ('tags',)
     inlines = (InrgedientQuantityInline,)
+    readonly_fields = ('favorite_count',)
+
+    @admin.display(description='Число добавлений в избранное')
+    def favorite_count(self, instance):
+        return instance.favorited.count()
 
 
 class IngredientAdmin(admin.ModelAdmin):
