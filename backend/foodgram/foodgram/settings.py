@@ -108,7 +108,7 @@ REST_FRAMEWORK = {
     ),
 
     'DEFAULT_PAGINATION_CLASS': 'api.core.CustomPageNumberPagination',
-    
+
     'PAGE_SIZE': 10,
 
     'NON_FIELD_ERRORS_KEY': 'errors',
