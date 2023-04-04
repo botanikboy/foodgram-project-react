@@ -2,7 +2,6 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from .views import (IngredientViewSet, RecipeViewSet,
-                    # SubscriptionsListViewSet,
                     TagViewSet, UserViewSet)
 
 router = SimpleRouter()
@@ -13,12 +12,8 @@ router.register('users/subscriptions', UserViewSet,
                 basename='subscriptions')
 router.register('users', UserViewSet,
                 basename='subscriptions')
-# router.register(r'users/(?P<author_id>[\d]+)/subscribe',
-#                 SubscriprionCreateDestroyViewSet,
-#                 basename='new_subscription')
 
 urlpatterns = [
-    # path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
     path('', include(router.urls))
 ]
