@@ -7,7 +7,8 @@ class User(AbstractUser):
         'recipes.Recipe', verbose_name='Избранное',
         related_name='favorited', blank=True)
     shopping_cart = models.ManyToManyField(
-        'recipes.Recipe', verbose_name='Список покупок', blank=True)
+        'recipes.Recipe', verbose_name='Список покупок', blank=True,
+        related_name='shopped')
     email = models.EmailField(unique=True)
 
     USERNAME_FIELD = 'email'
