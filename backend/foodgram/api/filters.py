@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from django.db.models import Q
-from recipes.models import Ingredient, Recipe
+from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
 
@@ -9,7 +9,11 @@ class RecipeFilter(filters.FilterSet):
         self.user = kwargs['request'].user
         super(RecipeFilter, self).__init__(*args, **kwargs)
 
-    tags = filters.CharFilter(field_name='tags__slug', lookup_expr='iexact')
+    tags = filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all(),
+    )
     author = filters.ModelChoiceFilter(queryset=User.objects)
     is_favorited = filters.BooleanFilter(method='is_favorited_method')
     is_in_shopping_cart = filters.BooleanFilter(

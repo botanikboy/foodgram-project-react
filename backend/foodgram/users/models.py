@@ -14,6 +14,3 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [
         'first_name', 'last_name', 'username']
-
-
-admins, created = Group.objects.get_or_create(name='Administrators')
