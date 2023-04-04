@@ -156,7 +156,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         slug_field='email')
     ingredients = IngredientAmountCreateSerializer(
         many=True)
-    image = Base64ImageField(required=True, allow_null=True)
+    image = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
         model = Recipe

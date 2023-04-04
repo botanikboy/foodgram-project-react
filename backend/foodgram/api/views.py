@@ -1,7 +1,7 @@
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import (IsAuthenticatedOrReadOnly,
-                                        IsAuthenticated)
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,11 +15,11 @@ from .serializers import (IngredientSerializer,
                           RecipeSerializer, RecipeCreateSerializer,
                           RecipeListSerializer, SubscriptionSerialiser,
                           TagSerializer)
-from .permissions import IsAdmin, IsAuthorOrAdminOrReadOnly
+from .permissions import IsAdmin, IsAuthorIsAdminOrReadOnly
 from .filters import InrgedientFilter, RecipeFilter
 
 
-class TagViewSet(ModelViewSet):
+class TagViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdmin,)
@@ -28,7 +28,7 @@ class TagViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+    permission_classes = (IsAuthorIsAdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
@@ -133,7 +133,7 @@ class RecipeViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdmin,)

@@ -2,6 +2,8 @@ from django.contrib import admin
 from recipes.models import (Ingredient, IngredientAmount, Recipe,
                             Subscription, Tag)
 
+from users.admin import StaffRequired
+
 
 class InrgedientQuantityInline(admin.TabularInline):
     model = IngredientAmount
@@ -10,7 +12,7 @@ class InrgedientQuantityInline(admin.TabularInline):
     verbose_name = 'Ингредиент'
 
 
-class RecipeAdmin(admin.ModelAdmin):
+class RecipeAdmin(StaffRequired, admin.ModelAdmin):
     list_display = ('name', 'author')
     search_fields = ('name',)
     list_filter = ('author', 'tags',)
@@ -23,13 +25,13 @@ class RecipeAdmin(admin.ModelAdmin):
         return instance.favorited.count()
 
 
-class IngredientAdmin(admin.ModelAdmin):
+class IngredientAdmin(StaffRequired, admin.ModelAdmin):
     fields = ('name', 'measurement_unit')
     list_display = ('name', 'measurement_unit')
     search_fields = ('name',)
 
 
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(StaffRequired, admin.ModelAdmin):
     list_display = ('colored_name', 'slug')
     fileds = ('name', 'color')
 

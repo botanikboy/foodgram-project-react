@@ -13,7 +13,7 @@ class IsAdmin(BasePermission):
         return request.user.is_staff
 
 
-class IsAuthorOrAdminOrReadOnly(BasePermission):
+class IsAuthorIsAdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
@@ -24,4 +24,4 @@ class IsAuthorOrAdminOrReadOnly(BasePermission):
             return True
         return (obj.author == request.user
                 or
-                request.user.groups.filter(name='Administrators').exists())
+                request.user.is_staff)
