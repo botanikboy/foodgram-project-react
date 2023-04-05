@@ -28,14 +28,14 @@ class RecipeFilter(filters.FilterSet):
             return queryset.filter(favorited=self.user)
         if value is False:
             return queryset.filter(~Q(favorited=self.user))
-        return
+        return None
 
     def is_in_shopping_cart_method(self, queryset, name, value):
         if value is True:
             return queryset.filter(shopped=self.user)
         if value is False:
             return queryset.filter(~Q(shopped=self.user))
-        return
+        return None
 
 
 class InrgedientFilter(filters.FilterSet):
