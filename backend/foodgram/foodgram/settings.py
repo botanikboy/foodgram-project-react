@@ -4,6 +4,8 @@ from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
+from api.constants import PAGE_SIZE
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -109,7 +111,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_PAGINATION_CLASS': 'api.core.CustomPageNumberPagination',
 
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': PAGE_SIZE,
 
     'NON_FIELD_ERRORS_KEY': 'errors',
 }
