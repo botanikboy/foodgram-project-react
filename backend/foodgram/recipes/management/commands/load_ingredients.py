@@ -22,7 +22,7 @@ class Command(BaseCommand):
         self.stdout.write(
             'Trying to load ingredients list from '
             f'{options["path_to_data_file"].name}'
-            )
+        )
         with options['path_to_data_file'] as source:
             try:
                 data = json.load(source)
@@ -42,6 +42,6 @@ class Command(BaseCommand):
             except Exception as error:
                 raise CommandError(
                     f'something went wrong {type(error)}: {error}'
-                    )
+                )
         self.stdout.write(self.style.SUCCESS(
             f'Successfully added {add_counter} new inrgedients'))

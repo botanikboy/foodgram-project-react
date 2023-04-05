@@ -1,5 +1,5 @@
-from django_filters import rest_framework as filters
 from django.db.models import Q
+from django_filters import rest_framework as filters
 from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
@@ -28,12 +28,14 @@ class RecipeFilter(filters.FilterSet):
             return queryset.filter(favorited=self.user)
         if value is False:
             return queryset.filter(~Q(favorited=self.user))
+        return None
 
     def is_in_shopping_cart_method(self, queryset, name, value):
         if value is True:
             return queryset.filter(shopped=self.user)
         if value is False:
             return queryset.filter(~Q(shopped=self.user))
+        return None
 
 
 class InrgedientFilter(filters.FilterSet):

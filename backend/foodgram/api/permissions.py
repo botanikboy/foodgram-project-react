@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsAdmin(BasePermission):
@@ -23,5 +23,4 @@ class IsAuthorIsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return (obj.author == request.user
-                or
-                request.user.is_staff)
+                or request.user.is_staff)

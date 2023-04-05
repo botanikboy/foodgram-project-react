@@ -1,7 +1,6 @@
 from django.contrib import admin
-from recipes.models import (Ingredient, IngredientAmount, Recipe,
-                            Subscription, Tag)
-
+from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
+                            Tag)
 from users.admin import StaffRequired
 
 
