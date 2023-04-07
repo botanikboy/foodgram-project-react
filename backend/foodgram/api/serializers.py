@@ -5,10 +5,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
+from .constants import RECIPES_LIMIT
 from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
                             Tag)
 from users.models import User
-from .constants import RECIPES_LIMIT
 
 
 class UserSerializer(serializers.ModelSerializer):
