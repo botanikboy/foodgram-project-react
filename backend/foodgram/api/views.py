@@ -61,6 +61,10 @@ class RecipeViewSet(ModelViewSet):
             instance, context={'request': request})
         return Response(instance_serializer.data)
 
+    def perform_destroy(self, instance):
+        instance.image.delete()
+        return super().perform_destroy(instance)
+
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
@@ -145,7 +149,8 @@ class UserViewSet(DjoserUserViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         serializer = SubscriptionSerialiser(
-            Subscription.objects.filter(subscriber=self.request.user))
+            Subscription.objects.filter(subscriber=self.request.user)
+            .order_by('ingredient__name'))
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'],

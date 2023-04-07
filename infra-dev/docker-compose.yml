@@ -9,12 +9,28 @@ services:
     ports:
       - 5432:5432
 
+  # web:
+  #   build:
+  #     context: ../backend/foodgram
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   volumes:
+  #     - static_value:/static/
+  #     - media_value:/media/
+  #   ports:
+  #     - 8000:8000
+  #   depends_on:
+  #     - db
+  #   env_file:
+  #     - ../infra-dev/.env
+
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
+
   nginx:
     image: nginx:1.19.3
     ports:
@@ -24,5 +40,8 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
 
+
 volumes:
   db_data:
+  # static_value:
+  # media_value:
