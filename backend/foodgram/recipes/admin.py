@@ -32,7 +32,7 @@ class IngredientAdmin(StaffRequired, admin.ModelAdmin):
 
 
 class TagAdmin(StaffRequired, admin.ModelAdmin):
-    list_display = ('colored_name', 'slug')
+    list_display = ('name', 'slug')
     fileds = ('name', 'color')
 
 

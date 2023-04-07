@@ -158,9 +158,6 @@ class UserViewSet(DjoserUserViewSet):
     def subscribe(self, request, id=None):
         author = self.get_object()
         current_user = self.request.user
-        print(author)
-        print(Subscription.objects.filter(
-            subscriber=current_user, author=author).exists())
         if Subscription.objects.filter(
             subscriber=current_user,
             author=author,

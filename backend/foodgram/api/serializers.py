@@ -102,12 +102,6 @@ class Base64ImageField(serializers.ImageField):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    # ВОПРОС ДЛЯ РЕВЬЮ: в ТЗ не указано, что должно происходить при изменении
-    # или добавлении рецепта администратором, должен ли автор рецепта
-    # оставаться неизменным или меняться на Администратора?
-    # Если дать админу возможность указывать автора вручную, то делать
-    # через get_fields и из view передавать дополнительно в context поле
-    # для исключения, если пользователь является админом?
     author = UserSerializer(many=False, read_only=True,
                             default=serializers.CurrentUserDefault())
     ingredients = IngredientAmountSerializer(
@@ -182,12 +176,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags', None)
         instance.tags.set(tags)
         instance.amounts.all().delete()
-        for ingredient_data in ingredients_data:
-            IngredientAmount.objects.create(
-                recipe=instance,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount'],
-            )
+        # for ingredient_data in ingredients_data:
+        #     IngredientAmount.objects.create(
+        #         recipe=instance,
+        #         ingredient=ingredient_data['ingredient'],
+        #         amount=ingredient_data['amount'],
+        #     )
+
+        IngredientAmount.objects.bulk_create(
+            recipe=instance,
+            ingredient=ingredients_data['ingredient'],
+            amount=ingredients_data['amount'],
+        )
+
         super().update(instance, validated_data)
         return instance
 

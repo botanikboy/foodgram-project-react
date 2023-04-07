@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.html import format_html
 from django.utils.text import slugify
 
 from recipes.utils import transliterate
@@ -32,13 +31,6 @@ class Tag(models.Model):
                              max_length=7, verbose_name='Цвет в HEX',
                              )
     slug = models.SlugField(unique=True, editable=False)
-
-    def colored_name(self):
-        return format_html(
-            '<span style="color: {};">{}</span>',
-            self.color,
-            self.name,
-        )
 
     def __str__(self):
         return str(self.name)
