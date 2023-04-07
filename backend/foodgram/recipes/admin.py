@@ -1,7 +1,8 @@
 from django.contrib import admin
+
+from users.admin import StaffRequired
 from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
                             Tag)
-from users.admin import StaffRequired
 
 
 class InrgedientQuantityInline(admin.TabularInline):

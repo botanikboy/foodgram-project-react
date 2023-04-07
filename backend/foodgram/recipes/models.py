@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.html import format_html
 from django.utils.text import slugify
+
 from recipes.utils import transliterate
 
 User = get_user_model()
