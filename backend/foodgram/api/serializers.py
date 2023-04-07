@@ -2,12 +2,12 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
-                            Tag)
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from users.models import User
 
+from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
+                            Tag)
+from users.models import User
 from .constants import RECIPES_LIMIT
 
 
