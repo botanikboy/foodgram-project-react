@@ -6,7 +6,7 @@ from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .constants import RECIPES_LIMIT
 from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
-from users.models import User, Subscription
+from users.models import Subscription, User
 
 
 class UserSerializer(serializers.ModelSerializer):
