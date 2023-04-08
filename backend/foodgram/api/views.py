@@ -13,9 +13,10 @@ from .filters import InrgedientFilter, RecipeFilter
 from .permissions import IsAdmin, IsAuthorIsAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeListSerializer, RecipeSerializer,
-                          SubscriptionSerialiser, TagSerializer)
-from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
-                            Tag)
+                          SubscriptionSerialiser,
+                          SubscriptionCreateSerialiser, TagSerializer)
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
+from users.models import Subscription
 
 
 class TagViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
@@ -142,15 +143,31 @@ class IngredientViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     permission_classes = (IsAdmin,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = InrgedientFilter
+    pagination_class = None
 
 
 class UserViewSet(DjoserUserViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
+        user_subscriptions = (
+            Subscription.objects
+            .filter(subscriber=request.user)
+            .order_by('author__username')
+        )
+        page = self.paginate_queryset(user_subscriptions)
+        if page is not None:
+            serializer = SubscriptionSerialiser(
+                page,
+                context={'request': request},
+                many=True,
+            )
+            return self.get_paginated_response(serializer.data)
         serializer = SubscriptionSerialiser(
-            Subscription.objects.filter(subscriber=self.request.user)
-            .order_by('ingredient__name'))
+            user_subscriptions,
+            context={'request': request},
+            many=True,
+        )
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'],
@@ -158,17 +175,14 @@ class UserViewSet(DjoserUserViewSet):
     def subscribe(self, request, id=None):
         author = self.get_object()
         current_user = self.request.user
-        if Subscription.objects.filter(
-            subscriber=current_user,
-            author=author,
-        ).exists():
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={'errors': 'Уже подписан.'})
-        subscription = Subscription.objects.create(
-            subscriber=current_user,
-            author=author
+        serializer = SubscriptionCreateSerialiser(
+            data={'author': author.id, 'subscriber': current_user.id},
+            context={'request': request}
         )
+        if serializer.is_valid():
+            subscription = serializer.save()
+        else:
+            return Response(serializer.errors)
         serializer = SubscriptionSerialiser(subscription,
                                             context={'request': request})
         return Response(serializer.data)

@@ -115,8 +115,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.core.CustomPageNumberPagination',
 
     'PAGE_SIZE': PAGE_SIZE,
-
-    'NON_FIELD_ERRORS_KEY': 'errors',
 }
 
 DJOSER = {

@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
-                            Tag)
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 from users.admin import StaffRequired
 
 
@@ -36,7 +35,6 @@ class TagAdmin(StaffRequired, admin.ModelAdmin):
     fileds = ('name', 'color')
 
 
-admin.site.register(Subscription)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)

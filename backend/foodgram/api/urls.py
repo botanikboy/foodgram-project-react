@@ -7,10 +7,7 @@ router = SimpleRouter()
 router.register('tags', TagViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('ingredients', IngredientViewSet)
-router.register('users/subscriptions', UserViewSet,
-                basename='subscriptions')
-router.register('users', UserViewSet,
-                basename='subscriptions')
+router.register('users', UserViewSet)
 
 urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),

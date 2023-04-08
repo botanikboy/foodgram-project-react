@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -13,13 +13,13 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField(max_length=10,
                                         verbose_name='Единицы измерения')
 
-    def __str__(self):
-        return f'{self.name}, {self.measurement_unit}'
-
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
+
+    def __str__(self):
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Tag(models.Model):
@@ -32,9 +32,6 @@ class Tag(models.Model):
                              )
     slug = models.SlugField(unique=True, editable=False)
 
-    def __str__(self):
-        return str(self.name)
-
     def save(self, *args, **kwards):
         self.slug = slugify(transliterate(self.name))
         self.color = self.color.upper()
@@ -43,6 +40,9 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
+
+    def __str__(self):
+        return str(self.name)
 
 
 class Recipe(models.Model):
@@ -61,18 +61,27 @@ class Recipe(models.Model):
                                          through='IngredientAmount',
                                          verbose_name='Ингредиенты')
     tags = models.ManyToManyField(Tag, verbose_name='Теги')
-    cooking_time = models.IntegerField(
-        null=False, blank=False, verbose_name='Время приготовления в минутах')
+    cooking_time = models.PositiveIntegerField(
+        null=False,
+        blank=False,
+        verbose_name='Время приготовления в минутах',
+        validators=[
+            MinValueValidator(limit_value=1,
+                              message='Должно быть больше 1'),
+            MaxValueValidator(limit_value=14400,
+                              message='Не больше 10 дней'),
+        ]
+    )
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='Дата публикации')
 
-    def __str__(self):
-        return self.name
-
     class Meta:
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+
+    def __str__(self):
+        return self.name
 
 
 class IngredientAmount(models.Model):
@@ -80,33 +89,22 @@ class IngredientAmount(models.Model):
                                    verbose_name='Ингредиент')
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='amounts',)
-    amount = models.PositiveSmallIntegerField(blank=False, null=False,
-                                              verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        blank=False, null=False,
+        verbose_name='Количество',
+        validators=[
+            MinValueValidator(limit_value=1,
+                              message='Должно быть больше 1'),
+            MaxValueValidator(limit_value=32767,
+                              message='Не больше 10 дней'),
+        ]
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['ingredient', 'recipe'],
+                                    name='unique_ingredient'),
+        ]
 
     def __str__(self):
         return str(self.id)
-
-
-class Subscription(models.Model):
-    subscriber = models.ForeignKey(User, related_name='subsribers',
-                                   on_delete=models.CASCADE,
-                                   verbose_name='Подписчик')
-    author = models.ForeignKey(User, related_name='favorite_authors',
-                               on_delete=models.CASCADE,
-                               verbose_name='Автор')
-
-    def __str__(self):
-        return (f'Подписчик: {self.subscriber.username}, '
-                f'Автор: {self.author.username}')
-
-    def clean(self):
-        if self.subscriber == self.author:
-            raise ValidationError('Автор и подписчик не могут совпадать')
-
-    class Meta:
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
-        constraints = [
-            models.UniqueConstraint(fields=['subscriber', 'author'],
-                                    name='unique_subscription'),
-        ]

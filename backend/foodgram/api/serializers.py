@@ -1,14 +1,12 @@
 import base64
 
 from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from .constants import RECIPES_LIMIT
-from recipes.models import (Ingredient, IngredientAmount, Recipe, Subscription,
-                            Tag)
-from users.models import User
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
+from users.models import User, Subscription
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -76,6 +74,12 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
             'measurement_unit',
             'amount',
         )
+        validators = [
+            UniqueValidator(
+                queryset=IngredientAmount.objects,
+                message='Ингредиент повторяется в рецепте.'
+            )
+        ]
 
 
 class IngredientAmountCreateSerializer(serializers.ModelSerializer):
@@ -148,8 +152,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         many=False, read_only=True, default=serializers.CurrentUserDefault(),
         slug_field='email')
-    ingredients = IngredientAmountCreateSerializer(
-        many=True)
+    ingredients = IngredientAmountCreateSerializer(many=True)
     image = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
@@ -166,27 +169,25 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
         validators = [
             UniqueTogetherValidator(
-                queryset=Recipe.objects, fields=['author', 'name'],
+                queryset=Recipe.objects,
+                fields=['author', 'name'],
                 message='Рецепт с таким названием уже есть у этого автора.'
-            )
+            ),
         ]
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
         instance.tags.set(tags)
+        # удаляю все ингредиенты из рецепта и создаю заново, тк если
+        # делать через update(), то удаленные ингредиенты останутся в рецепте
         instance.amounts.all().delete()
-        # for ingredient_data in ingredients_data:
-        #     IngredientAmount.objects.create(
-        #         recipe=instance,
-        #         ingredient=ingredient_data['ingredient'],
-        #         amount=ingredient_data['amount'],
-        #     )
-
         IngredientAmount.objects.bulk_create(
-            recipe=instance,
-            ingredient=ingredients_data['ingredient'],
-            amount=ingredients_data['amount'],
+            [IngredientAmount(
+                recipe=instance,
+                ingredient=entry['ingredient'],
+                amount=entry['amount']
+            ) for entry in ingredients_data],
         )
 
         super().update(instance, validated_data)
@@ -197,12 +198,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags', None)
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        for ingredient_data in ingredients_data:
-            IngredientAmount.objects.create(
+
+        IngredientAmount.objects.bulk_create(
+            [IngredientAmount(
                 recipe=recipe,
-                ingredient=ingredient_data['ingredient'],
-                amount=ingredient_data['amount'],
-            )
+                ingredient=entry['ingredient'],
+                amount=entry['amount']
+            ) for entry in ingredients_data],
+        )
         return recipe
 
 
@@ -242,19 +245,6 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
         return Subscription.objects.filter(
             subscriber=current_user, author=obj.author).exists()
 
-    def validate(self, data):
-        user = self.context['request'].user
-        author = get_object_or_404(
-            User, pk=self.context['view'].kwargs['author_id'])
-        if user == author:
-            raise serializers.ValidationError(
-                'Нельзя подписаться на самого себя')
-        if Subscription.objects.filter(subscriber=user,
-                                       author=author).exists():
-            raise serializers.ValidationError(
-                'Уже подписан')
-        return super().validate(data)
-
     class Meta:
         model = Subscription
         fields = (
@@ -269,4 +259,27 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
         )
         read_only_fields = (
             'recipes_count',
+        )
+
+
+class SubscriptionCreateSerialiser(serializers.ModelSerializer):
+    subscriber = serializers.PrimaryKeyRelatedField(queryset=User.objects)
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects)
+
+    def validate(self, data):
+        if data['subscriber'] == data['author']:
+            raise serializers.ValidationError(
+                {'errors': 'Нельзя подписаться на самого себя'})
+        if Subscription.objects.filter(subscriber=data['subscriber'],
+                                       author=data['author']).exists():
+            raise serializers.ValidationError(
+                {'errors': 'Уже подписан'})
+        return super().validate(data)
+
+    class Meta:
+        model = Subscription
+        fields = (
+            'subscriber',
+            'author',
+
         )
