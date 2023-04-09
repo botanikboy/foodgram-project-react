@@ -11,7 +11,7 @@ services:
   web:
     build:
       context: ../
-      dockerfile: backend/foodgram/Dockerfile
+      dockerfile: backend/foodgram/Dockerfile_local
     restart: always
     volumes:
       - static_value:/backend/foodgram/static/
