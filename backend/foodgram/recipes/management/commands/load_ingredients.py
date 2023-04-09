@@ -15,9 +15,9 @@ class Command(BaseCommand):
             'path_to_data_file',
             nargs='?',
             type=argparse.FileType('r', encoding='UTF-8'),
-            default='../../data/ingredients.json',
+            default='./data/ingredients.json',
             help='Path to .json file with data, if empty default will be '
-                 'used: ../../data/ingredients.json')
+                 'used: /data/ingredients.json')
 
     def handle(self, *args, **options):
         self.stdout.write(

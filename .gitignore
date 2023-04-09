@@ -134,5 +134,10 @@ dmypy.json
 # media
 *media/
 
+# static
+*static/
+
 
 .vscode/
+
+*fixtures.json
