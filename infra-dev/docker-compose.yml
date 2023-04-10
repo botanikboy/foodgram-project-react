@@ -13,7 +13,7 @@ services:
   frontend:
     build:
       context: ../frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_local
     volumes:
       - ../frontend/:/app/result_build/
 

@@ -141,4 +141,3 @@ dmypy.json
 .vscode/
 
 *fixtures.json
-*Dockerfile_local
