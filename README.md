@@ -2,6 +2,11 @@
 ![workflow badge](https://github.com/botanikboy/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 Foodram is a website for posting recipes.
+http://158.160.5.224/
+
+admin_user
+login: petr@petr.com
+pass: hardpassword
 
 ## Установка
 
