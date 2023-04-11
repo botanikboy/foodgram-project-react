@@ -112,7 +112,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True, source='amounts', read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = Base64ImageField(required=True, allow_null=True)
+    image = Base64ImageField(required=True,)
 
     def get_is_favorited(self, obj):
         if self.context['request'].user.is_authenticated:
@@ -153,7 +153,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         many=False, read_only=True, default=serializers.CurrentUserDefault(),
         slug_field='email')
     ingredients = IngredientAmountCreateSerializer(many=True)
-    image = Base64ImageField(required=True, allow_null=False)
+    image = Base64ImageField(required=True,)
 
     class Meta:
         model = Recipe
@@ -178,19 +178,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
-        instance.tags.set(tags)
-        # удаляю все ингредиенты из рецепта и создаю заново, тк если
-        # делать через update(), то удаленные ингредиенты останутся в рецепте
-        instance.amounts.all().delete()
-        IngredientAmount.objects.bulk_create(
-            [IngredientAmount(
-                recipe=instance,
-                ingredient=entry['ingredient'],
-                amount=entry['amount']
-            ) for entry in ingredients_data],
-        )
-
-        super().update(instance, validated_data)
+        if tags:
+            instance.tags.set(tags)
+        if ingredients_data:
+            instance.amounts.all().delete()
+            IngredientAmount.objects.bulk_create(
+                [IngredientAmount(
+                    recipe=instance,
+                    ingredient=entry['ingredient'],
+                    amount=entry['amount']
+                ) for entry in ingredients_data],
+            )
+            super().update(instance, validated_data)
         return instance
 
     def create(self, validated_data):
