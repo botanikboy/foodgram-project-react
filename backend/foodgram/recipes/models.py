@@ -37,7 +37,7 @@ class Tag(models.Model):
             regex='^#(?:[0-9a-fA-F]{3}){1,2}$',
             code='invalid_color_format'
         )]
-        )
+    )
     slug = models.SlugField(
         unique=True, editable=False)
 
