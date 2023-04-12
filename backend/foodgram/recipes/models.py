@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 from django.utils.text import slugify
 
@@ -23,14 +24,22 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(null=False, blank=False,
-                            max_length=250, verbose_name='Название',
-                            unique=True)
-    color = models.CharField(null=False, blank=False,
-                             default='#ffffff',
-                             max_length=7, verbose_name='Цвет в HEX',
-                             )
-    slug = models.SlugField(unique=True, editable=False)
+    name = models.CharField(
+        null=False, blank=False,
+        max_length=250, verbose_name='Название',
+        unique=True)
+    color = models.CharField(
+        null=False, blank=False,
+        default='#ffffff',
+        max_length=7, verbose_name='Цвет в HEX',
+        validators=[RegexValidator(
+            message='Неверный формат цвета HEX #ffffff',
+            regex='^#(?:[0-9a-fA-F]{3}){1,2}$',
+            code='invalid_color_format'
+        )]
+        )
+    slug = models.SlugField(
+        unique=True, editable=False)
 
     def save(self, *args, **kwards):
         self.slug = slugify(transliterate(self.name))
@@ -47,20 +56,35 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='recipes',
-                               verbose_name='Автор')
-    name = models.CharField(max_length=250, null=False, blank=False,
-                            verbose_name='Название')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор')
+    name = models.CharField(
+        max_length=250,
+        null=False,
+        blank=False,
+        verbose_name='Название',
+        validators=[RegexValidator(
+            inverse_match=True,
+            message='В названии необходимо использовать буквы.',
+            regex='^[0-9\\W]+$',
+            code='invalid_name'
+        )]
+    )
     image = models.ImageField(
         upload_to='recipes/',
-        null=False, blank=False,
+        null=False,
+        blank=False,
         verbose_name='Картинка')
-    text = models.TextField(null=False, blank=False,
-                            verbose_name='Текстовое описание')
-    ingredients = models.ManyToManyField(Ingredient,
-                                         through='IngredientAmount',
-                                         verbose_name='Ингредиенты')
+    text = models.TextField(
+        null=False,
+        blank=False,
+        verbose_name='Текстовое описание')
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        through='IngredientAmount',
+        verbose_name='Ингредиенты')
     tags = models.ManyToManyField(Tag, verbose_name='Теги')
     cooking_time = models.PositiveIntegerField(
         null=False,
@@ -73,8 +97,9 @@ class Recipe(models.Model):
                               message='Не больше 10 дней'),
         ]
     )
-    pub_date = models.DateTimeField(auto_now_add=True,
-                                    verbose_name='Дата публикации')
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации')
 
     class Meta:
         ordering = ('-pub_date',)
