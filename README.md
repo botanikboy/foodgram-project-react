@@ -2,53 +2,48 @@
 ![workflow badge](https://github.com/botanikboy/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 Foodram is a website for posting recipes.
-http://158.160.5.224/
 
-admin_user
-login: petr@petr.com
-pass: hardpassword
+## Installation and launch
 
-## Установка
-
-### Шаблон наполенеия env-файла
+### env file template
 
 ```python
-DB_ENGINE=django.db.backends.postgresql # тип используемой базы данных(в примере postgresql)
-DB_NAME=postgres # имя базы данных
-POSTGRES_USER=postgres # логин для подключения к базе данных
-POSTGRES_PASSWORD=postgres # пароль для подключения к БД (установите свой)
-DB_HOST=db # название сервиса (контейнера)
-DB_PORT=5432 # порт для подключения к БД
-SECRET_KEY = 'XXX' # Secret Key для проекта Django
+DB_ENGINE=django.db.backends.postgresql # database type
+DB_NAME=postgres # database name
+POSTGRES_USER=postgres # database login
+POSTGRES_PASSWORD=postgres # database password
+DB_HOST=db # docker container name wuth databaase
+DB_PORT=5432 # database port
+SECRET_KEY = 'XXX' # Secret Key for Django
 ```
-Для разворачивания проекта в контейнерах с помощью Docker перейдите в директорию с проектом и выполните следующие команды:
-1. перейти в директорию с файлом docker-compose.yaml
+To launch the project in Docker containers locally do the following:
+1. change working directory to location of docker-compose.yaml file
 ```bash
 cd .\infra\
 ```
-2. запустить процесс создания docker image (образов)
+2. launch build for docker images
 ```
 docker compose up -d --build
 ```
-3. после окончания процесса убедиться, что успешно запущены все контейнеры
+3. enshure that all containers are up and running
 ```
 docker container ls
 ```
-4. выполнить миграции
+4. mage database migrations
 ```bash
 docker compose exec web python manage.py migrate
 ```
-5. для заполнения базы данных тестовыми данными из фикстур выполнить команду
+5. for database test data load fixtures
 ```bash
 docker compose exec web python manage.py loaddata fixtures.json
 ```
-6. создать суперпользователя
+6. createsuperuser for control
 ```bash
 docker compose exec web python manage.py createsuperuser
 ```
-7. собрать файлы статики
+7. collect static files in one folder
 ```bash
 docker compose exec web python manage.py collectstatic --no-input
 ```
-Если всё прошло успешно проект доступен по адресу:
+If everything is ok the web site is availible:
 http://localhost/
