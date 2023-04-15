@@ -258,11 +258,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         subscriber = self.context['request'].user
         author = validated_data['author']['id']
-        subscription = Subscription.objects.create(
+        return Subscription.objects.create(
             subscriber=subscriber,
             author=author
         )
-        return subscription
 
     class Meta:
         model = Subscription
