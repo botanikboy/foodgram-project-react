@@ -219,9 +219,10 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
 
-class SubscriptionSerialiser(serializers.ModelSerializer):
+class SubscriptionSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField(source='author.email')
-    id = serializers.ReadOnlyField(source='author.id')
+    id = serializers.PrimaryKeyRelatedField(queryset=User.objects,
+                                            source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
@@ -244,6 +245,25 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
         return Subscription.objects.filter(
             subscriber=current_user, author=obj.author).exists()
 
+    def validate(self, data):
+        if data['author']['id'] == self.context['request'].user:
+            raise serializers.ValidationError(
+                {'errors': 'Нельзя подписаться на самого себя'})
+        if Subscription.objects.filter(subscriber=self.context['request'].user,
+                                       author=data['author']['id']).exists():
+            raise serializers.ValidationError(
+                {'errors': 'Уже подписан'})
+        return super().validate(data)
+
+    def create(self, validated_data):
+        subscriber = self.context['request'].user
+        author = validated_data['author']['id']
+        subscription = Subscription.objects.create(
+            subscriber=subscriber,
+            author=author
+        )
+        return subscription
+
     class Meta:
         model = Subscription
         fields = (
@@ -257,28 +277,11 @@ class SubscriptionSerialiser(serializers.ModelSerializer):
             'recipes_count',
         )
         read_only_fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
             'recipes_count',
-        )
-
-
-class SubscriptionCreateSerialiser(serializers.ModelSerializer):
-    subscriber = serializers.PrimaryKeyRelatedField(queryset=User.objects)
-    author = serializers.PrimaryKeyRelatedField(queryset=User.objects)
-
-    def validate(self, data):
-        if data['subscriber'] == data['author']:
-            raise serializers.ValidationError(
-                {'errors': 'Нельзя подписаться на самого себя'})
-        if Subscription.objects.filter(subscriber=data['subscriber'],
-                                       author=data['author']).exists():
-            raise serializers.ValidationError(
-                {'errors': 'Уже подписан'})
-        return super().validate(data)
-
-    class Meta:
-        model = Subscription
-        fields = (
-            'subscriber',
-            'author',
-
         )

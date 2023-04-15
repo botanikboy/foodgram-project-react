@@ -13,8 +13,7 @@ from .filters import InrgedientFilter, RecipeFilter
 from .permissions import IsAdmin, IsAuthorIsAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeListSerializer, RecipeSerializer,
-                          SubscriptionCreateSerialiser, SubscriptionSerialiser,
-                          TagSerializer)
+                          SubscriptionSerializer, TagSerializer)
 from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 from users.models import Subscription
 
@@ -157,13 +156,13 @@ class UserViewSet(DjoserUserViewSet):
         )
         page = self.paginate_queryset(user_subscriptions)
         if page is not None:
-            serializer = SubscriptionSerialiser(
+            serializer = SubscriptionSerializer(
                 page,
                 context={'request': request},
                 many=True,
             )
             return self.get_paginated_response(serializer.data)
-        serializer = SubscriptionSerialiser(
+        serializer = SubscriptionSerializer(
             user_subscriptions,
             context={'request': request},
             many=True,
@@ -174,16 +173,15 @@ class UserViewSet(DjoserUserViewSet):
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         author = self.get_object()
-        current_user = self.request.user
-        serializer = SubscriptionCreateSerialiser(
-            data={'author': author.id, 'subscriber': current_user.id},
+        serializer = SubscriptionSerializer(
+            data={'id': author.id, },
             context={'request': request}
         )
         if serializer.is_valid():
             subscription = serializer.save()
         else:
             return Response(serializer.errors)
-        serializer = SubscriptionSerialiser(subscription,
+        serializer = SubscriptionSerializer(subscription,
                                             context={'request': request})
         return Response(serializer.data)
 
