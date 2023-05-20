@@ -35,6 +35,11 @@ class TagAdmin(StaffRequired, admin.ModelAdmin):
     fileds = ('name', 'color')
 
 
+class IngredientAmountAdmin(StaffRequired, admin.ModelAdmin):
+    list_display = ('ingredient', 'recipe')
+
+
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
+admin.site.register(IngredientAmount, IngredientAmountAdmin)

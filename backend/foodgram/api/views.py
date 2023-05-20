@@ -1,5 +1,5 @@
 from django.db.models import Sum
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
@@ -98,17 +98,24 @@ class RecipeViewSet(ModelViewSet):
             .values('ingredient__name', 'ingredient__measurement_unit')
             .annotate(total_amount=Sum('amount'))
             .order_by('ingredient__name'))
-        with open('media/shopping_cart.txt', 'w', encoding="utf-8") as f:
-            for ingredient in amounts_in_cart:
-                f.write(
-                    f'{ingredient["ingredient__name"].capitalize()} ('
-                    f'{ingredient["ingredient__measurement_unit"]}) - '
-                    f'{ingredient["total_amount"]}\n'
-                )
-        f = open('media/shopping_cart.txt', 'rb')
-        response = FileResponse(f, content_type='text/plain; charset=UTF-8')
-        response['Content-Disposition'] = (
-            'attachment;filename="shopping_cart.txt"')
+
+        user = self.request.user
+        filename = f'{user.username}_shopping_list.txt'
+        shopping_list = [
+            f'Список покупок для:\n\n{user.first_name}\n'
+        ]
+
+        for ingredient in amounts_in_cart:
+            shopping_list.append(
+                f'{ingredient["ingredient__name"].capitalize()} ('
+                f'{ingredient["ingredient__measurement_unit"]}) - '
+                f'{ingredient["total_amount"]}\n'
+            )
+        shopping_list = '\n'.join(shopping_list)
+        response = HttpResponse(
+            shopping_list, content_type='text.txt; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
     @action(detail=True, methods=['post'],
