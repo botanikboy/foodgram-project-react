@@ -1,11 +1,11 @@
 # Foodgram
 ![workflow badge](https://github.com/botanikboy/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-Foodram is a website for posting recipes.
+Foodram is a website for posting recipes with photos. User authentification and personal favirities, one can add recipies and download a list of grosseries from basket as a txt.
 
 ## Installation and launch
 
-### env file template
+### env file template [.env.example](infra-dev/.env.example)
 
 ```python
 DB_ENGINE=django.db.backends.postgresql # database type
@@ -47,3 +47,14 @@ docker compose exec web python manage.py collectstatic --no-input
 ```
 If everything is ok the web site is availible:
 http://localhost/
+
+## Tech stack
+- [Python](https://www.python.org/)
+- [Docker](https://www.docker.com/)
+- [Django](https://www.djangoproject.com/)
+- [Django REST framework](https://www.django-rest-framework.org/)
+- [Djoser](https://djoser.readthedocs.io/en/latest/)
+
+## Author
+Developed by:
+[Ilya Savinkin](https://www.linkedin.com/in/ilya-savinkin-6002a711/)
